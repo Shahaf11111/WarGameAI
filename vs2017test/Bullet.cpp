@@ -56,7 +56,6 @@ bool Bullet::Move(Maze* maze) {
 	// return true if hit a soldier. otherwise return false
 	int* cell = this->coor2cell(this->x, this->y);
 	int myCellColor = maze->get(cell[0], cell[1]);
-	//cout << cell[0] << "," << cell[1] << " | " << myCellColor << endl;
 	if (myCellColor == this->targetColor) {
 		Fire(false);
 		this->hit = true;
@@ -73,9 +72,9 @@ bool Bullet::Move(Maze* maze) {
 
 int* Bullet::updateSecurityMap(int maze[MSZ][MSZ]) {
 	int* cell = this->coor2cell(this->x, this->y);
-	if (maze[cell[0]][cell[1]] == WALL) {
+	if (maze[cell[1]][cell[0]] == WALL) {
 		this->Fire(false);
-		return NULL;
+		return nullptr;
 	}
 	this->x += SPEED * this->dirx;
 	this->y += SPEED * this->diry;

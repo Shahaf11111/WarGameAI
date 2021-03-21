@@ -12,7 +12,6 @@ class Maze {
 
 private:
 	int maze[MSZ][MSZ];
-	int securityMap[MSZ][MSZ] = { 0 };
 	Room rooms[NUM_ROOMS];
 	AStar aStar;
 
@@ -27,10 +26,11 @@ public:
 	bool isInsideTunnel(int col, int row);
 	bool isSafe(int col, int row);
 	void initSecurityMap();
-	void GenerateSecurityMap();
+	void initSafeCells(int securityMap[MSZ][MSZ]);
+	int* getSafeCellWith(int color);
 	int get(int col, int row);
 	void set(int col, int row, int color);
 	stack<Node*> getPath();
-
+	Room getRoomAt(int index);
 };
 

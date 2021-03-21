@@ -1,8 +1,21 @@
 #pragma once
 #include "Bullet.h"
 #include "Maze.h"
+#include <set>
+#include <math.h>
 
 const int NUM_BULLETS = 20;
+
+struct CellPosComparator {
+	bool operator() (const int* cell1, const int* cell2) const {
+		//cout << cell1[0] << "," << cell1[1] << "||"<< cell2[0] << "," << cell2[1] << endl;
+		if (cell1[0] == cell2[0]) {
+			return cell1[1] < cell2[1];
+		}
+		return cell1[0] < cell2[0];
+		//return cell1[0] == cell2[0] ? true : cell1[1] < cell2[1];
+	}
+};
 
 class Grenade {
 
@@ -32,5 +45,5 @@ public:
 	double* cell2coor(int col, int row);
 	int getAngle() { return this->angle; };
 	vector<Bullet*> &getBullets() { return this->bullets;  }
-	vector<int*> updateSecurityMap(int maze[MSZ][MSZ]);
+	set<int*, CellPosComparator> updateSecurityMap(int maze[MSZ][MSZ]);
 };

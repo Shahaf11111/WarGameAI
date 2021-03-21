@@ -18,20 +18,15 @@ private:
 	int row;
 	int myColor;
 	int enemyColor;
-
 	int hp;
 	int ammo;
 	int grenades;
-
 	int angle;
-
+	int numTurnsToHide;
 	Bullet* bullet;
 	Grenade* grenade;
-
 	Soldier* currentEnemy;
 	Kit* currentKit;
-	Kit* currentHpKit;
-	Kit* currentAmmoKit;
 	Node* currentHideout;
 	stack<Node*> currentPath;
 
@@ -40,12 +35,11 @@ public:
 
 	bool play(vector<Soldier*>& enemySoldiers, vector<Kit*>& kits);
 
-	//bool move(int col, int row);
 	bool move(int col, int row);
 	bool move(int col, int row, vector<Kit*>& kits);
 
 	void hide();
-	void findSafestHideout();
+	void findSafeHideout();
 	void escape(vector<Kit*>& kits);
 
 	bool needToFindNewEnemy();
@@ -58,39 +52,20 @@ public:
 	
 	void shoot();
 	void initFire(int destCol, int destRow);
-	bool fire();
-	bool isFiring();
 
 	void throwGrenade(vector<Soldier*>& enemySoldiers);
 	void initGrenadeToss(int destCol, int destRow);
 
-
-
-
-
 	bool refill(vector<Kit*>& kits, int kitType);
 	bool moveAndCollect(vector<Kit*>& kits);
 	bool isKitNeeded(vector<Kit*> kits);
-
-
-
 	void collectKit(Node* kit, vector<Kit*>& kits, int kitType);
 
-
-	
-	/*
-	bool needToFindNewHpKit(vector<Kit*> hpKits);
-	bool restoreHp(vector<Kit*> &hpKits);
-	void collectHp(vector<Kit*> &hpKits);
-
-	bool needToFindNewAmmoKit(vector<Kit*> hpKits);
-	bool refillAmmo(vector<Kit*>& hpKits);
-	void collectAmmo(vector<Kit*>& hpKits);
-	
-	*/
 	void setAngle(int col, int row);
 	void setAngle(int angle);
 	void drawMe();
+	void drawRectangle(double* color, double x, double y, 
+		double width, double height, double rotateX, double rotateY);
 	double distance(int col, int row);
 	bool isDead();
 

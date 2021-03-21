@@ -34,13 +34,14 @@ void initKits() {
 }
 
 void init() {
+	cout << "Initializing the game..." << endl;
 	glClearColor(0.8, 0.7, 0.5, 0.0);// color of window background
 	glOrtho(-1, 1, -1, 1, 1, -1);
 	srand(time(0));
 	maze = new Maze();
 	initTeams();
 	initKits();
-	
+	cout << "The game is ready! Right click anywhere on the map to launch the game!" << endl;
 }
 
 void display() {

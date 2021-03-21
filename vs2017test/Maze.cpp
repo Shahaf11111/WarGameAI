@@ -1,5 +1,6 @@
 #include "Maze.h"
 #include "Grenade.h"
+
 using namespace std;
 
 Maze::Maze() {
@@ -89,7 +90,7 @@ void Maze::DigTunnels() {
 	for (int i = 0; i < NUM_ROOMS; i++) {
 		for (int j = i + 1; j < NUM_ROOMS; j++) {
 			this->DigTunnel(i, j); // A*
-			cout << "Tunnel from " << i << " to " << j << " is ready!\n";
+			//cout << "Tunnel from " << i << " to " << j << " is ready!\n";
 		}
 	}
 	cout << "All tunnels have been created!" << endl;
@@ -98,35 +99,37 @@ void Maze::DigTunnels() {
 
 void Maze::initSecurityMap() {
 	cout << "Initializing the security map..." << endl;
-	int numUpdates = 0;
+	int securityMap[MSZ][MSZ] = { 0 };
 	for (int i = 0; i < MSZ; i++) {
 		for (int j = 0; j < MSZ; j++) {
-			if (this->maze[i][j] == SPACE) {
-				if (numUpdates < 50) {
-					Grenade* grenade = new Grenade(j, i, j, i, WALL, SPACE);
-					vector<int*> updatedCells = grenade->updateSecurityMap(this->maze);
-					for (auto cell : updatedCells) {
-						cout << "updating..." << endl;
-						this->securityMap[cell[1]][cell[0]] += 1;
-					}
-					numUpdates++;
-					if (numUpdates % 10 == 0) {
-						cout << "So far " << numUpdates << " cells have been updated." << endl;
-					}
+			if (this->maze[i][j] != WALL && this->maze[i][j] != OBSTACLE) {
+				Grenade* grenade = new Grenade(j, i, j, i, WALL, SPACE);
+				for (auto cell : grenade->updateSecurityMap(this->maze)) {
+					securityMap[cell[1]][cell[0]] += 1;
 				}
 			}
 		}
 	}
+	this->initSafeCells(securityMap);
 	cout << "Security map have been created!" << endl;
-	for (int i = 0; i < MSZ; i++) {
-		for (int j = 0; j < MSZ; j++) {
-			if (this->securityMap[i][j] > 0) {
-				cout << this->securityMap[i][j] << " ";
-			}
+}
+
+int* Maze::getSafeCellWith(int color) {
+	int max = 0;
+	int* safeCell = nullptr;
+	for (int i = 0; i < NUM_ROOMS; i++) {
+		int count = this->rooms[i].getAmountOf(this->maze, color);
+		if (max < count) {
+			safeCell = this->rooms[i].getSafeCell();
 		}
-		//cout << endl;
 	}
-	cout << endl;
+	return safeCell;
+}
+
+void Maze::initSafeCells(int securityMap[MSZ][MSZ]) {
+	for (int i = 0; i < NUM_ROOMS; i++) {
+		this->rooms[i].initSafeCells(securityMap);
+	}
 }
 
 void Maze::DrawMe()
@@ -137,6 +140,7 @@ void Maze::DrawMe()
 
 	sx = 2.0 / MSZ;
 	sy = 2.0 / MSZ;
+	int factor = MSZ * MSZ;
 	for (i = 0; i < MSZ; i++)
 		for (j = 0; j < MSZ; j++)
 		{
@@ -144,7 +148,6 @@ void Maze::DrawMe()
 			{
 			case SPACE:
 				glColor3d(1, 1, 1);   // white
-				//glColor3d(1 - this->securityMap[i][j], 1 - this->securityMap[i][j], 1 - this->securityMap[i][j]);
 				break;
 			case WALL:
 				glColor3d(0.4, 0.0, 0.2);   // dark-red
@@ -211,4 +214,8 @@ void Maze::set(int col, int row, int color) {
 
 stack<Node*> Maze::getPath() {
 	return this->aStar.getPath();
+}
+
+Room Maze::getRoomAt(int index) {
+	return this->rooms[index];
 }

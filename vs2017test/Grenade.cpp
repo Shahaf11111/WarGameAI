@@ -1,6 +1,5 @@
 
 #include "Grenade.h"
-#include <math.h>
 
 Grenade::Grenade(int startCol, int startRow, 
 	int targetCol, int targetRow, 
@@ -110,18 +109,17 @@ double* Grenade::cell2coor(int col, int row) {
 	return new double[] { x, y };
 }
 
-
-vector<int*> Grenade::updateSecurityMap(int maze[MSZ][MSZ]) {
-	int notMovingCounter = 0;
-	Explode(); // set bullets on fire
-	vector<int*> updatedCells;
+set<int*, CellPosComparator> Grenade::updateSecurityMap(int maze[MSZ][MSZ]) {
+	int notMovingCounter;
+	this->Explode(); // set bullets on fire
+	set<int*, CellPosComparator> cellsToUpdate;
 	while (!this->isExploded) {
+		notMovingCounter = 0;
 		for (auto bullet : this->bullets) {
 			if (bullet->IsMoving()) {
 				int* cell = bullet->updateSecurityMap(maze);
-				if (cell != NULL) {
-					cout << "pushed" << endl;
-					updatedCells.push_back(cell);
+				if (cell != nullptr) {
+					cellsToUpdate.insert(cell);
 				}
 			} else {
 				notMovingCounter++;
@@ -129,5 +127,5 @@ vector<int*> Grenade::updateSecurityMap(int maze[MSZ][MSZ]) {
 		}
 		this->isExploded = notMovingCounter == NUM_BULLETS;
 	}
-	return updatedCells;
+	return cellsToUpdate;
 }
