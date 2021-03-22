@@ -19,7 +19,7 @@ public:
 	Maze();
 	void InitMaze();
 	void InitRooms();
-	void runAStar(int c, int r, int tc, int tr);
+	void runAStar(int c, int r, int tc, int tr, int friendColor, int enemyColor);
 	void DigTunnel(int index1, int index2);
 	void DigTunnels();
 	void DrawMe();

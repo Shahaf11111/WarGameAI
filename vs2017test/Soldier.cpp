@@ -70,7 +70,8 @@ void Soldier::hide() {
 	}
 	this->numTurnsToHide++;
 	this->maze->runAStar(this->getCol(), this->getRow(),
-		this->currentHideout->getCol(), this->currentHideout->getRow());
+		this->currentHideout->getCol(), this->currentHideout->getRow(),
+		this->myColor, this->enemyColor);
 	stack<Node*> path = this->maze->getPath();
 	swap(this->currentPath, path);
 }
@@ -143,7 +144,8 @@ bool Soldier::refill(vector<Kit*>& kits, int kitType) {
 	if (currentKit != nullptr) {
 		if (this->currentPath.empty()) {
 			this->maze->runAStar(this->getCol(), this->getRow(),
-				currentKit->getCol(), currentKit->getRow());
+				currentKit->getCol(), currentKit->getRow(), 
+				this->myColor, this->enemyColor);
 			stack<Node*> path = this->maze->getPath();
 			swap(this->currentPath, path);
 		}
@@ -219,7 +221,8 @@ void Soldier::lookForEnemy(vector<Soldier*>& enemySoldiers) {
 		}
 		else { // Find path to the enemy:
 			this->maze->runAStar(this->getCol(), this->getRow(),
-				this->currentEnemy->getCol(), this->currentEnemy->getRow());
+				this->currentEnemy->getCol(), this->currentEnemy->getRow(),
+				this->myColor, this->enemyColor);
 			stack<Node*> path = this->maze->getPath();
 			swap(this->currentPath, path);
 		}

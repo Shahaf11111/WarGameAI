@@ -69,8 +69,8 @@ void Maze::InitRooms() {
 	cout << "All rooms have been created!" << endl;
 }
 
-void Maze::runAStar(int c, int r, int tc, int tr) {
-	this->aStar.findPath(c, r, tc, tr, this->maze);
+void Maze::runAStar(int c, int r, int tc, int tr, int friendColor, int enemyColor) {
+	this->aStar.findPath(c, r, tc, tr, friendColor, enemyColor, this->maze);
 }
 
 // run A* that finds the "best" path from rooms[index1] to rooms[index2]
@@ -81,7 +81,7 @@ void Maze::DigTunnel(int index1, int index2) {
 	c = rooms[index1].GetCenterCol();
 	tr = rooms[index2].GetCenterRow();
 	tc = rooms[index2].GetCenterCol();
-	this->aStar.findPath(c, r, tc, tr, this->maze);
+	this->aStar.findPath(c, r, tc, tr,0, 0, this->maze);
 	this->aStar.colorPath(this->maze, SPACE);
 }
 

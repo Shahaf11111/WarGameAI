@@ -28,21 +28,34 @@ void AStar::updatePQ(priority_queue <Node, vector<Node>, CompareNodes>& pq, Node
 	}
 }
 
+double AStar::getCost(int color, int friendColor, int enemyColor) {
+	if (color == WALL) {
+		return 1.5;
+	}
+	if (color == SPACE) {
+		return 0.1;
+	}
+	if (color == friendColor) {
+		return 0.5;
+	}
+	if (color == enemyColor) {
+		return 2.0;
+	}
+	return 1.0;
+}
+
 // row, col are the coordinates of a new Node,
 // trow, tcol are the coordinates of a target
 void AStar::checkNeighbor(Node* pcurrent, int row, int col, int trow, int tcol,
 	vector <Node>& grays, vector <Node>& blacks,
-	priority_queue <Node, vector<Node>, CompareNodes>& pq, int maze[MSZ][MSZ])
-{
+	priority_queue <Node, vector<Node>, CompareNodes>& pq, int friendColor, int enemyColor,
+	int maze[MSZ][MSZ]) {
 	Node* pneighbor;
-	double space_cost = 0.1, wall_cost = 1.5, cost;
 	vector <Node>::iterator it_gray;
 	vector <Node>::iterator it_black;
 
-	// the cost of motion to the new Node depends on whather it is SPACE or WALL
-	if (maze[row][col] != WALL && maze[row][col] != OBSTACLE)
-		cost = space_cost;
-	else cost = wall_cost;
+	// the cost of motion to the new Node depends on its color:
+	double cost = this->getCost(maze[col][row], friendColor, enemyColor);
 	pneighbor = new Node(row, col, trow, tcol, pcurrent->GetG() + cost, pcurrent);
 	// now add it to pq if 
 	// 1. it is white
@@ -86,13 +99,14 @@ void AStar::colorPath(int maze[MSZ][MSZ], int color) {
 	swap(this->path, temp);
 }
 
-void AStar::findPath(int c, int r, int tc, int tr, int maze[MSZ][MSZ]) {
+void AStar::findPath(int c, int r, int tc, int tr, 
+	int friendColor, int enemyColor, int maze[MSZ][MSZ]) {
 	// Clear previous queue:
 	while (!this->path.empty()) {
 		this->path.pop();
 	}
 	// Find path with AStar:
-	Node* node = this->run(c, r, tc, tr, maze);
+	Node* node = this->run(c, r, tc, tr, friendColor, enemyColor, maze);
 	// Populate the 'path' attribute:
 	while (node != nullptr && fabs(node->GetG()) > 0.01) { // only at START g=0
 		this->path.push(node);
@@ -101,7 +115,7 @@ void AStar::findPath(int c, int r, int tc, int tr, int maze[MSZ][MSZ]) {
 }
 
 // run A* that finds the "best" path from rooms[index1] to rooms[index2]
-Node* AStar::run(int c, int r, int tc, int tr, int maze[MSZ][MSZ]) {
+Node* AStar::run(int c, int r, int tc, int tr, int friendColor, int enemyColor, int maze[MSZ][MSZ]) {
 	bool target_found = false;
 	Node* pcurrent = nullptr;
 	vector <Node> grays;
@@ -132,22 +146,26 @@ Node* AStar::run(int c, int r, int tc, int tr, int maze[MSZ][MSZ]) {
 		// check UP
 		if (pcurrent->getRow() < MSZ - 1)
 		{
-			checkNeighbor(pcurrent, pcurrent->getRow() + 1, pcurrent->getCol(), tr, tc, grays, blacks, pq, maze);
+			checkNeighbor(pcurrent, pcurrent->getRow() + 1, pcurrent->getCol(), 
+				tr, tc, grays, blacks, pq, friendColor, enemyColor, maze);
 		}
 		// check DOWN
 		if (pcurrent->getRow() > 0)
 		{
-			checkNeighbor(pcurrent, pcurrent->getRow() - 1, pcurrent->getCol(), tr, tc, grays, blacks, pq, maze);
+			checkNeighbor(pcurrent, pcurrent->getRow() - 1, pcurrent->getCol(),
+				tr, tc, grays, blacks, pq, friendColor, enemyColor, maze);
 		}
 		// check left
 		if (pcurrent->getCol() > 0)
 		{
-			checkNeighbor(pcurrent, pcurrent->getRow(), pcurrent->getCol() - 1, tr, tc, grays, blacks, pq, maze);
+			checkNeighbor(pcurrent, pcurrent->getRow(), pcurrent->getCol() - 1,
+				tr, tc, grays, blacks, pq, friendColor, enemyColor, maze);
 		}
 		// check right
 		if (pcurrent->getCol() < MSZ - 1)
 		{
-			checkNeighbor(pcurrent, pcurrent->getRow(), pcurrent->getCol() + 1, tr, tc, grays, blacks, pq, maze);
+			checkNeighbor(pcurrent, pcurrent->getRow(), pcurrent->getCol() + 1,
+				tr, tc, grays, blacks, pq, friendColor, enemyColor, maze);
 		}
 	}
 	return pcurrent;
