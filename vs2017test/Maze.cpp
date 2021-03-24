@@ -81,7 +81,7 @@ void Maze::DigTunnel(int index1, int index2) {
 	c = rooms[index1].GetCenterCol();
 	tr = rooms[index2].GetCenterRow();
 	tc = rooms[index2].GetCenterCol();
-	this->aStar.findPath(c, r, tc, tr,0, 0, this->maze);
+	this->aStar.findPath(c, r, tc, tr, SPACE, SPACE, this->maze);
 	this->aStar.colorPath(this->maze, SPACE);
 }
 
@@ -214,6 +214,18 @@ void Maze::set(int col, int row, int color) {
 
 stack<Node*> Maze::getPath() {
 	return this->aStar.getPath();
+}
+
+int Maze::getAmountOfColorInRoom(int col, int row, int color) {
+	// Receives cell to find out if there's a room that contains this cell.
+	// If so, counts (and returns) the amount of 'color' cells in that room.
+	for (int i = 0; i < NUM_ROOMS; i++) {
+		Room room = this->rooms[i];
+		if (room.isInside(col, row)) {
+			return room.getAmountOf(this->maze, color);
+		}
+	}
+	return 0;
 }
 
 Room Maze::getRoomAt(int index) {

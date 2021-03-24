@@ -79,6 +79,9 @@ void display() {
 void idle() {
 	chrono::steady_clock::time_point start = chrono::steady_clock::now();
 	if (continueGame && blueTeam != nullptr && redTeam != nullptr) {
+		if (allKits.empty()) {
+			initKits();
+		}
 		blueTeam->play(redTeam, allKits);
 		redTeam->play(blueTeam, allKits);
 	}
@@ -96,6 +99,9 @@ void menu(int choice) {
 		continueGame = true;
 		break;
 	case 2:
+		continueGame = false;
+		break;
+	case 3:
 		continueGame = false;
 		initTeams();
 		initKits();
@@ -118,7 +124,8 @@ void main(int argc, char* argv[]) {
 	// menu
 	glutCreateMenu(menu);
 	glutAddMenuEntry("Start", 1);
-	glutAddMenuEntry("Restart", 2);
+	glutAddMenuEntry("Stop", 2);
+	glutAddMenuEntry("Restart", 3);
 
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 

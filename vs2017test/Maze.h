@@ -31,6 +31,7 @@ public:
 	int get(int col, int row);
 	void set(int col, int row, int color);
 	stack<Node*> getPath();
+	int getAmountOfColorInRoom(int col, int row, int color);
 	Room getRoomAt(int index);
 };
 

@@ -46,9 +46,7 @@ public:
 	void findNearestEnemy(vector<Soldier*>& enemySoldiers);
 	void lookForEnemy(vector<Soldier*>& enemySoldiers);
 	bool moveTowardsEnemy(vector<Kit*>& kits);
-	bool isEnemyInMyRoom();
 	bool isInsideTunnel();
-	int* getRoomEdge(char direction);
 	
 	void shoot();
 	void initFire(int destCol, int destRow);
@@ -64,8 +62,6 @@ public:
 	void setAngle(int col, int row);
 	void setAngle(int angle);
 	void drawMe();
-	void drawRectangle(double* color, double x, double y, 
-		double width, double height, double rotateX, double rotateY);
 	double distance(int col, int row);
 	bool isDead();
 

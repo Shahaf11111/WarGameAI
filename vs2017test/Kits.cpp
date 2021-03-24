@@ -31,11 +31,11 @@ int Kits::genRandAmount(int type) {
 double* Kits::type2color(int type) {
 	switch (type) {
 	case HP_KIT:
-		return new double[] { 0.0, 1.0, 0.0 };
+		return new double[] { 1.0, 0.1, 0.4 }; // dark pink
 	case AMMO_KIT:
-		return new double[] { 0.5, 0.5, 0.5 };
+		return new double[] { 0.0, 0.8, 0.4 }; // light green
 	case GRENADE_KIT:
-		return new double[] { 0.8, 0.1, 0.5 };
+		return new double[] { 0.5, 1.0, 0.5 }; // dark green
 	default:
 		return new double[] { 0.0, 0.0, 0.0 };
 	}

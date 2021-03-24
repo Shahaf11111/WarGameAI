@@ -18,12 +18,14 @@ private:
 		vector <Node>& grays, vector <Node>& blacks,
 		priority_queue <Node, vector<Node>, CompareNodes>& pq,
 		int friendColor, int enemyColor, int maze[MSZ][MSZ]);
-	Node* run(int c, int r, int tc, int tr, int friendColor, int enemyColor, int maze[MSZ][MSZ]);
+	Node* run(int startCol, int startRow, int endCol, int endRow,
+		int friendColor, int enemyColor, int maze[MSZ][MSZ]);
 
 public:
 	void colorPath(int maze[MSZ][MSZ], int color);
-	void findPath(int c, int r, int tc, int tr, int friendColor, int enemyColor, int maze[MSZ][MSZ]);
+	void findPath(int startCol, int startRow, int endCol, int endRow,
+		int friendColor, int enemyColor, int maze[MSZ][MSZ]);
 	stack<Node*> getPath();
-	double getCost(int color, int friendColor, int enemyColor);
+	double getCellCost(int color, int friendColor, int enemyColor);
 };
 

@@ -24,12 +24,11 @@ bool Soldier::play(vector<Soldier*>& enemySoldiers, vector<Kit*>& kits) {
 	if (this->isDead()) {
 		return false;
 	}
-	if (this->myColor == TEAM_BLUE)
-		if (this->hp <= LOW_HP_THRESHOLD) {
-			if (this->refill(kits, HP_KIT)) {
-				return true;
-			}
+	if (this->hp <= LOW_HP_THRESHOLD) {
+		if (this->refill(kits, HP_KIT)) {
+			return true;
 		}
+	}
 	if (this->ammo <= LOW_AMMO_THRESHOLD) {
 		if (this->refill(kits, AMMO_KIT)) {
 			return true;
@@ -57,6 +56,7 @@ bool Soldier::play(vector<Soldier*>& enemySoldiers, vector<Kit*>& kits) {
 	this->hide();
 	if (this->currentHideout != nullptr) {
 		this->escape(kits);
+		return true;
 	}
 	return true;
 }
@@ -212,8 +212,17 @@ void Soldier::lookForEnemy(vector<Soldier*>& enemySoldiers) {
 	this->findNearestEnemy(enemySoldiers);
 	// If enemy is found, move towards it or shoot it:
 	if (currentEnemy != nullptr) {
-		if (this->isEnemyInMyRoom()) {
-			if (rand() % 3 == 0) { // Choose randomly between fire and throw grenade
+		int numEnemiesInMyRoom = 
+			this->maze->getAmountOfColorInRoom(this->col, this->row, this->enemyColor);
+		if (numEnemiesInMyRoom > 0) {
+			int numFriendsInMyRoom = 
+				this->maze->getAmountOfColorInRoom(this->col, this->row, this->myColor);
+			if (numEnemiesInMyRoom > numFriendsInMyRoom) {
+				this->currentEnemy = nullptr;
+				return;
+			}
+			// Choose randomly between fire and throw grenade: 
+			if (rand() % 3 == 0) {
 				this->initGrenadeToss(this->currentEnemy->getCol(), this->currentEnemy->getRow());
 			} else {
 				this->initFire(this->currentEnemy->getCol(), this->currentEnemy->getRow());
@@ -231,7 +240,7 @@ void Soldier::lookForEnemy(vector<Soldier*>& enemySoldiers) {
 
 bool Soldier::moveTowardsEnemy(vector<Kit*>& kits) {
 	// Return true if goes towards an enemy, false otherwise.
-	if (this->isEnemyInMyRoom()) {
+	if (this->maze->getAmountOfColorInRoom(this->col, this->row, this->enemyColor) > 0) {
 		stack<Node*> path;
 		swap(this->currentPath, path);
 	}
@@ -242,51 +251,8 @@ bool Soldier::moveTowardsEnemy(vector<Kit*>& kits) {
 	return false;
 }
 
-bool Soldier::isEnemyInMyRoom() {
-	if (this->currentEnemy == nullptr) {
-		return false;
-	}
-	if (this->isInsideTunnel()) {
-		return false;
-	}
-	int* startEdge = this->getRoomEdge('-');
-	int* endEdge = this->getRoomEdge('+');
-	return this->currentEnemy->getCol() >= startEdge[0] &&
-		this->currentEnemy->getCol() <= endEdge[0] &&
-		this->currentEnemy->getRow() >= startEdge[1] &&
-		this->currentEnemy->getRow() <= endEdge[1];
-}
-
 bool Soldier::isInsideTunnel() {
 	return this->maze->isInsideTunnel(this->col, this->row);
-}
-
-int* Soldier::getRoomEdge(char direction) {
-	int col = this->col;
-	int row = this->row;
-	while (col >= 0 && row >= 0 && col < MSZ && row < MSZ) {
-		if (this->maze->get(col, row) == WALL) {
-			break;
-		} else {
-			if (direction == '+') {
-				col++;
-			} else if (direction == '-') {
-				col--;
-			}
-			if (this->maze->get(col, row) == WALL) {
-				break;
-			}
-			if (direction == '+') {
-				row++;
-			} else if (direction == '-') {
-				row--;
-			}
-			if (this->maze->get(col, row) == WALL) {
-				break;
-			}
-		}
-	}
-	return new int[] {col, row};
 }
 
 /* Bullet Functions: */
@@ -342,8 +308,7 @@ void Soldier::throwGrenade(vector<Soldier*>& enemySoldiers) {
 bool Soldier::move(int col, int row) {
 	// Returns true if move succeeded, false otherwise.
 	int nextNodeColor = this->maze->get(col, row);
-	if (nextNodeColor == WALL || nextNodeColor == OBSTACLE ||
-		nextNodeColor == TEAM_BLUE || nextNodeColor == TEAM_RED) {
+	if (nextNodeColor == WALL || nextNodeColor == OBSTACLE) {
 		return false;
 	}
 	this->setAngle(col, row);
@@ -388,7 +353,7 @@ void Soldier::drawMe() {
 	if (this->isDead()) {
 		return;
 	}
-	double size = 0.01;
+	double size = 1.2 / MSZ;
 	double* myCoors = this->cell2coor(this->col, this->row);
 	double x = myCoors[0];
 	double y = myCoors[1];
@@ -400,11 +365,11 @@ void Soldier::drawMe() {
 		drawColor[2] = 1;
 	}
 	// Rifle:
-	this->drawRectangle(drawColor, x + size, y, size, size / 2, x, y);
+	drawRectangle(drawColor, x + size, y, size, size / 2, x, y, this->angle);
 	// Outer body:
-	this->drawRectangle(drawColor, x, y, size, size, NULL, NULL);
+	drawRectangle(drawColor, x, y, size, size, NULL, NULL, NULL);
 	// Inner body:
-	this->drawRectangle(new double[] {0, 0, 0}, x, y, size / 2, size / 2, x, y);
+	drawRectangle(new double[] {0, 0, 0}, x, y, size / 2, size / 2, x, y, this->angle);
 	// Draw the bullet or the grenade (if exists):
 	if (bullet) {
 		this->bullet->DrawMe();
@@ -414,27 +379,6 @@ void Soldier::drawMe() {
 		this->grenade->DrawMe();
 	} else if (grenade && (!grenade->exploded())) {
 		this->grenade = nullptr;
-	}
-}
-
-void Soldier::drawRectangle(double* color, double centerX, double centerY, 
-	double width, double height, double rotateX, double rotateY) {
-	glColor3d(color[0], color[1], color[2]);
-	if (rotateX != NULL && rotateY != NULL) {
-		glPushMatrix();
-		glTranslated(rotateX, rotateY, 0.0);
-		glRotated(this->angle, 0.0, 0.0, 1.0);
-		glTranslated(-rotateX, -rotateY, 0.0);
-		glColor3d(color[0], color[1], color[2]);
-	}
-	glBegin(GL_POLYGON);
-	glVertex2d(centerX - width, centerY - height);
-	glVertex2d(centerX - width, centerY + height);
-	glVertex2d(centerX + width, centerY + height);
-	glVertex2d(centerX + width, centerY - height);
-	glEnd();
-	if (rotateX != NULL && rotateY != NULL) {
-		glPopMatrix();
 	}
 }
 

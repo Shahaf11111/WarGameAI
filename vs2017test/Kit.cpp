@@ -1,6 +1,28 @@
 #include "Kit.h"
 #include "glut.h"
 
+
+void drawRectangle(double* color, double centerX, double centerY,
+	double width, double height, double rotateX, double rotateY, int angle) {
+	glColor3d(color[0], color[1], color[2]);
+	if (rotateX != NULL && rotateY != NULL && angle != NULL) {
+		glPushMatrix();
+		glTranslated(rotateX, rotateY, 0.0);
+		glRotated(angle, 0.0, 0.0, 1.0);
+		glTranslated(-rotateX, -rotateY, 0.0);
+		glColor3d(color[0], color[1], color[2]);
+	}
+	glBegin(GL_POLYGON);
+	glVertex2d(centerX - width, centerY - height);
+	glVertex2d(centerX - width, centerY + height);
+	glVertex2d(centerX + width, centerY + height);
+	glVertex2d(centerX + width, centerY - height);
+	glEnd();
+	if (rotateX != NULL && rotateY != NULL && angle != NULL) {
+		glPopMatrix();
+	}
+}
+
 Kit::Kit(int c, int r, int amount, int type, double* color) : Node(c, r) {
 	this->amount = amount;
 	this->type = type;
@@ -13,16 +35,13 @@ int Kit::getAmount()
 }
 
 void Kit::drawMe() {
-	double size = 0.01;
+	double size = 0.65 / MSZ;
 	double* myCoors = this->cell2coor(this->getCol(), this->getRow());
 	double x = myCoors[0];
 	double y = myCoors[1];
-	glColor3d(this->color[0], this->color[1], this->color[2]);
-	// Diamond shape:
-	glBegin(GL_POLYGON);
-	glVertex2d(x, y + size);
-	glVertex2d(x + size, y);
-	glVertex2d(x, y - size);
-	glVertex2d(x - size, y);
-	glEnd();
+	drawRectangle(new double[] {0, 0, 0}, x, y, size, size * 2, NULL, NULL, NULL);
+	drawRectangle(new double[] {0, 0, 0}, x, y, size * 2, size, NULL, NULL, NULL);
+	size *= 0.75;
+	drawRectangle(this->color, x, y, size, size * 2, NULL, NULL, NULL);
+	drawRectangle(this->color, x, y, size * 2, size, NULL, NULL, NULL);
 }
