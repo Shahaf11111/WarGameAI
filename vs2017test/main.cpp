@@ -23,14 +23,38 @@ void initTeams() {
 	redTeam = new Team(maze, NUM_SOLDIERS, TEAM_RED, TEAM_BLUE);
 }
 
-void initKits() {
-	Kits* hpKits = new Kits(maze, HP_KIT_AMOUNT, HP_KIT);
-	Kits* ammoKits = new Kits(maze, AMMO_KIT_AMOUNT, AMMO_KIT);
-	Kits* grenadeKits = new Kits(maze, GRENADE_KIT_AMOUNT, GRENADE_KIT);
-	allKits.clear();
-	allKits.insert(allKits.end(), hpKits->getKits().begin(), hpKits->getKits().end());
-	allKits.insert(allKits.end(), ammoKits->getKits().begin(), ammoKits->getKits().end());
-	allKits.insert(allKits.end(), grenadeKits->getKits().begin(), grenadeKits->getKits().end());
+void initKits(bool hp, bool ammo, bool grenade) {
+	if (hp && ammo && grenade) {
+		allKits.clear();
+	}
+	if (hp) {
+		Kits* hpKits = new Kits(maze, HP_KIT_AMOUNT, HP_KIT);
+		allKits.insert(allKits.end(), hpKits->getKits().begin(), hpKits->getKits().end());
+	}
+	if (ammo) {
+		Kits* ammoKits = new Kits(maze, AMMO_KIT_AMOUNT, AMMO_KIT);
+		allKits.insert(allKits.end(), ammoKits->getKits().begin(), ammoKits->getKits().end());
+	}
+	if (grenade) {
+		Kits* grenadeKits = new Kits(maze, GRENADE_KIT_AMOUNT, GRENADE_KIT);
+		allKits.insert(allKits.end(), grenadeKits->getKits().begin(), grenadeKits->getKits().end());
+	}
+}
+
+void refillKits() {
+	int hpKitCount = 0;
+	int ammoKitCount = 0;
+	int grenadeKitCount = 0;
+	for (auto kit : allKits) {
+		if (kit->getType() == HP_KIT) {
+			hpKitCount++;
+		} else if (kit->getType() == AMMO_KIT) {
+			ammoKitCount++;
+		} else if (kit->getType() == GRENADE_KIT) {
+			grenadeKitCount++;
+		}
+	}
+	initKits(hpKitCount == 0, ammoKitCount == 0, grenadeKitCount == 0);
 }
 
 void init() {
@@ -40,7 +64,7 @@ void init() {
 	srand(time(0));
 	maze = new Maze();
 	initTeams();
-	initKits();
+	initKits(true, true, true);
 	cout << "The game is ready! Right click anywhere on the map to launch the game!" << endl;
 }
 
@@ -79,9 +103,7 @@ void display() {
 void idle() {
 	chrono::steady_clock::time_point start = chrono::steady_clock::now();
 	if (continueGame && blueTeam != nullptr && redTeam != nullptr) {
-		if (allKits.empty()) {
-			initKits();
-		}
+		refillKits();
 		blueTeam->play(redTeam, allKits);
 		redTeam->play(blueTeam, allKits);
 	}
@@ -104,12 +126,12 @@ void menu(int choice) {
 	case 3:
 		continueGame = false;
 		initTeams();
-		initKits();
+		initKits(true, true, true);
 		break;
 	}
 }
 
-void main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
 	glutInitWindowSize(WIDTH, HEIGHT);
@@ -125,11 +147,12 @@ void main(int argc, char* argv[]) {
 	glutCreateMenu(menu);
 	glutAddMenuEntry("Start", 1);
 	glutAddMenuEntry("Stop", 2);
-	glutAddMenuEntry("Restart", 3);
+	glutAddMenuEntry("Reset", 3);
 
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 
 	init();
 
 	glutMainLoop();
+	return 0;
 }

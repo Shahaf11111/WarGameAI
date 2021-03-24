@@ -4,6 +4,9 @@
 void drawRectangle(double* color, double x, double y,
 	double width, double height, double rotateX, double rotateY, int angle);
 
+void drawTriangle(double* color, double centerX, double centerY,
+	double width, double height, double rotateX, double rotateY, int angle);
+
 class Kit : public Node {
 
 private:

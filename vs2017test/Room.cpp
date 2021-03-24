@@ -67,11 +67,11 @@ int* Room::getSafeCell() {
 	return safeCells[rand() % safeCells.size()];
 }
 
-int Room::getAmountOf(int maze[MSZ][MSZ], int color) {
+int Room::getAmountOf(int maze[MSZ][MSZ], int colToExclude, int rowToExclude, int color) {
 	int counter = 0;
 	for (int i = centerY - height / 2; i < centerY + height / 2; i++) {
 		for (int j = centerX - width / 2; j < centerX + width / 2; j++) {
-			if (maze[i][j] == color) {
+			if (maze[i][j] == color && (i != rowToExclude && j != colToExclude)) {
 				counter++;
 			}
 		}
@@ -88,9 +88,9 @@ bool Room::IsOverlap(int w, int h, int row, int col)
 	return hdist < w / 2 + width / 2 + 2 && vdist < h / 2 + height / 2 + 2;
 }
 
-bool Room::isInside(int col, int row) {
-	return col > this->leftBottomCorner[0] && col < this->rightUpperCorner[0] &&
-		row > this->leftBottomCorner[1] && row < this->rightUpperCorner[1];
+bool Room::contains(int col, int row) {
+	return col >= this->leftBottomCorner[0] && col <= this->rightUpperCorner[0] &&
+		row >= this->leftBottomCorner[1] && row <= this->rightUpperCorner[1];
 }
 
 int Room::getHeight() {

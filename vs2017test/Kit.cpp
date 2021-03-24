@@ -23,6 +23,26 @@ void drawRectangle(double* color, double centerX, double centerY,
 	}
 }
 
+void drawTriangle(double* color, double centerX, double centerY,
+	double width, double height, double rotateX, double rotateY, int angle) {
+	glColor3d(color[0], color[1], color[2]);
+	if (rotateX != NULL && rotateY != NULL && angle != NULL) {
+		glPushMatrix();
+		glTranslated(rotateX, rotateY, 0.0);
+		glRotated(angle, 0.0, 0.0, 1.0);
+		glTranslated(-rotateX, -rotateY, 0.0);
+		glColor3d(color[0], color[1], color[2]);
+	}
+	glBegin(GL_POLYGON);
+	glVertex2d(centerX, centerY - height);
+	glVertex2d(centerX + width, centerY);
+	glVertex2d(centerX, centerY + height);
+	glEnd();
+	if (rotateX != NULL && rotateY != NULL && angle != NULL) {
+		glPopMatrix();
+	}
+}
+
 Kit::Kit(int c, int r, int amount, int type, double* color) : Node(c, r) {
 	this->amount = amount;
 	this->type = type;

@@ -24,9 +24,9 @@ public:
 	void FillMaze(int maze[MSZ][MSZ]);
 	void initSafeCells(int securityMap[MSZ][MSZ]);
 	int* getSafeCell();
-	int getAmountOf(int maze[MSZ][MSZ], int color);
+	int getAmountOf(int maze[MSZ][MSZ], int colToExclude, int rowToExclude, int color);
 	bool IsOverlap(int w, int h, int row, int col);
-	bool isInside(int col, int row);
+	bool contains(int col, int row);
 	int GetCenterRow() { return centerY; };
 	int GetCenterCol() { return centerX; };
 	int getHeight();

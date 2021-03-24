@@ -44,13 +44,11 @@ void AStar::checkNeighbor(Node* pcurrent, int row, int col, int trow, int tcol,
 	vector <Node>& grays, vector <Node>& blacks,
 	priority_queue <Node, vector<Node>, CompareNodes>& pq, int friendColor, int enemyColor,
 	int maze[MSZ][MSZ]) {
-	Node* neighbor;
 	vector <Node>::iterator grayIterator;
 	vector <Node>::iterator blackIterator;
-
 	// the cost of motion to the new Node depends on its color:
 	double cost = this->getCellCost(maze[row][col], friendColor, enemyColor);
-	neighbor = new Node(row, col, trow, tcol, pcurrent->GetG() + cost, pcurrent);
+	Node* neighbor = new Node(row, col, trow, tcol, pcurrent->GetG() + cost, pcurrent);
 	// now add it to pq if 
 	// 1. it is white
 	// 2. it is gray but it improves f of this Node 

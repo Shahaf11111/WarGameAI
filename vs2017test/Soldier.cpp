@@ -1,16 +1,18 @@
 #include "Soldier.h"
 
 using namespace std;
-
+int thisisanindex = 0;
 Soldier::Soldier(Maze* maze, int col, int row, int myColor, int enemyColor) {
+	this->index = thisisanindex;
+	thisisanindex++;
 	this->maze = maze;
 	this->col = col;
 	this->row = row;
 	this->myColor = myColor;
 	this->enemyColor = enemyColor;
-	this->ammo = rand() % MAX_AMMO + 1;
-	this->grenades = rand() % MAX_GRENADES + 1;
-	this->hp = rand() % MAX_HP + 1;
+	this->ammo = MAX_AMMO;// rand() % MAX_AMMO + 1;
+	this->grenadeAmount = MAX_GRENADES;// rand() % MAX_GRENADES + 1;
+	this->hp = MAX_HP;// rand() % MAX_HP + 1;
 	this->numTurnsToHide = 0;
 	this->angle = rand() % 360;
 	this->bullet = nullptr;
@@ -18,45 +20,116 @@ Soldier::Soldier(Maze* maze, int col, int row, int myColor, int enemyColor) {
 	this->currentKit = nullptr;
 	this->currentEnemy = nullptr;
 	this->currentHideout = nullptr;
+	this->isStabbing = false;
 }
 
-bool Soldier::play(vector<Soldier*>& enemySoldiers, vector<Kit*>& kits) {
-	if (this->isDead()) {
-		return false;
-	}
+bool Soldier::refill(vector<Kit*>& kits) {
+	// Return true if did refill, otherwise false
 	if (this->hp <= LOW_HP_THRESHOLD) {
-		if (this->refill(kits, HP_KIT)) {
+		if (this->refillKit(kits, HP_KIT)) {
 			return true;
 		}
 	}
 	if (this->ammo <= LOW_AMMO_THRESHOLD) {
-		if (this->refill(kits, AMMO_KIT)) {
+		if (this->refillKit(kits, AMMO_KIT)) {
 			return true;
 		}
 	}
-	if (this->grenades <= LOW_GRENADE_THRESHOLD) {
-		if (this->refill(kits, GRENADE_KIT)) {
+	if (this->grenadeAmount <= LOW_GRENADE_THRESHOLD) {
+		if (this->refillKit(kits, GRENADE_KIT)) {
 			return true;
 		}
 	}
+	return false;
+}
+
+bool Soldier::fight(vector<Soldier*>& enemySoldiers, vector<Kit*>& kits) {
+	// Return true if did fight, otherwise false
+	bool retVal = false;
 	this->lookForEnemy(enemySoldiers);
 	if (this->currentEnemy != nullptr) {
 		if (this->bullet != nullptr) {
 			this->shoot();
-			return true;
+			retVal = true;
 		}
 		if (this->grenade != nullptr) {
 			this->throwGrenade(enemySoldiers);
-			return true;
+			retVal = true;
 		}
-		if (this->moveTowardsEnemy(kits)) {
-			return true;
+		if (!retVal) {
+			if (this->canStabCurrentEnemy()) {
+				this->stabCurrentEnemy();
+				retVal = true;
+			}
+			else if (this->moveTowardsEnemy(kits)) {
+				retVal = true;
+			}
 		}
 	}
+	return retVal;
+}
+
+bool Soldier::canStabCurrentEnemy() {
+	return abs(this->col - this->currentEnemy->getCol()) <= 1 &&
+		abs(this->row - this->currentEnemy->getRow()) <= 1;
+}
+
+void Soldier::stabCurrentEnemy() {
+	this->isStabbing = true;
+	this->currentEnemy->setHp(-STAB_DAMAGE);
+}
+
+void Soldier::run(vector<Kit*>& kits) {
 	this->hide();
 	if (this->currentHideout != nullptr) {
 		this->escape(kits);
-		return true;
+	}
+}
+
+void Soldier::printMe(int i) {
+	string enemyExists = this->currentEnemy != nullptr ? "true" : "false";
+	string hideoutExists = this->currentHideout != nullptr ? "true" : "false";
+	string kitExists = this->currentKit != nullptr ? "true" : "false";
+	if (this->index == i && this->currentKit == nullptr && 
+		(this->hp < LOW_HP_THRESHOLD || this->ammo < LOW_AMMO_THRESHOLD 
+			|| this->grenadeAmount < LOW_GRENADE_THRESHOLD)) {
+		cout<<"FUCK"<<endl;
+	}
+	if (this->index == i || this->index == i + NUM_SOLDIERS)
+		if (this->myColor == TEAM_BLUE)
+			cout << "BLUE " << this->index <<
+			" || POS:" << this->col << "," << this->row <<
+			" || HP:" << this->hp <<
+			" || AMMO:" << this->ammo <<
+			" || GRENADE:" << this->grenadeAmount <<
+			" || ENEMY: " << enemyExists <<
+			" || KIT: " << kitExists <<
+			" || HIDE: " << hideoutExists << endl;
+		/*else
+			cout << "RED " << this->index <<
+			" || POS:" << this->col << "," << this->row <<
+			" || HP:" << this->hp <<
+			" || AMMO:" << this->ammo <<
+			" || GRENADE:" << this->grenadeAmount <<
+			" || ENEMY EXISTS: " << enemyExists <<
+			" || KIT EXISTS: " << kitExists <<
+			" || HIDE EXISTS: " << hideoutExists << endl;*/
+}
+
+bool Soldier::play(vector<Soldier*>& enemySoldiers, vector<Kit*>& kits) {
+	// Return true if alive, false otherwise
+	if (this->isDead()) {
+		return false;
+	}
+	//this->printMe(0);
+	if (!this->refill(kits)) {
+		if (!this->fight(enemySoldiers, kits)) {
+			this->run(kits);
+		}
+	}
+	// Keep the grenage ongoing (even if the soldier is not currently fighting):
+	if (this->grenade != nullptr) {
+		this->throwGrenade(enemySoldiers);
 	}
 	return true;
 }
@@ -79,14 +152,16 @@ void Soldier::hide() {
 void Soldier::findSafeHideout() {
 	while (this->currentHideout == nullptr) {
 		// Find a safe room to team up with:
-		int* safeCell = this->maze->getSafeCellWith(this->myColor);
-		if (safeCell == nullptr) { // Then failed -> now find a random room:
-			int* safeCell = this->maze->getRoomAt(rand() % NUM_ROOMS).getSafeCell();
-			if (safeCell != nullptr) {
-				this->currentHideout = new Node(safeCell[0], safeCell[1]);
-			}
-		} else { // move towards the safest cell in this room:
+		int* safeCell = this->maze->getSafeCellWith(this->col, this->row, this->myColor);
+		if (safeCell != nullptr) { // Found a room with friends
 			this->currentHideout = new Node(safeCell[0], safeCell[1]);
+		} else {
+			while (safeCell == nullptr) {
+				safeCell = this->maze->getRoomAt(rand() % NUM_ROOMS).getSafeCell();
+				if (safeCell != nullptr) {
+					this->currentHideout = new Node(safeCell[0], safeCell[1]);
+				}
+			}
 		}
 	}
 }
@@ -114,7 +189,7 @@ void Soldier::collectKit(Node* nextNode, vector<Kit*>& kits, int kitType) {
 				this->setAmmo(kit->getAmount());
 				removeKit = true;
 			} else if (kitType == GRENADE_KIT) {
-				this->setGrenades(kit->getAmount());
+				this->setGrenadeAmount(kit->getAmount());
 				removeKit = true;
 			}
 			if (removeKit) {
@@ -127,7 +202,7 @@ void Soldier::collectKit(Node* nextNode, vector<Kit*>& kits, int kitType) {
 	
 }
 
-bool Soldier::refill(vector<Kit*>& kits, int kitType) {
+bool Soldier::refillKit(vector<Kit*>& kits, int kitType) {
 	// Return true if goes to refill HP. False otherwise.
 	double distanceToKit = DISTANCE_TO_SEARCH_KIT;
 	if (this->isKitNeeded(kits)) {
@@ -182,12 +257,12 @@ bool Soldier::isKitNeeded(vector<Kit*> kits) {
 /* Enemy Functions: */
 
 bool Soldier::needToFindNewEnemy() {
-	double distanceToEnemy = 100;
 	return this->ammo > 0 &&
-		this->grenades > 0 &&
+		this->grenadeAmount > 0 &&
 		(this->currentEnemy == nullptr ||
 			this->currentEnemy->isDead() ||
-			this->distance(this->currentEnemy->getCol(), this->currentEnemy->getRow()) > distanceToEnemy);
+			this->distance(this->currentEnemy->getCol(),
+				this->currentEnemy->getRow()) > DISTANCE_TO_SEARCH_ENEMY);
 }
 
 void Soldier::findNearestEnemy(vector<Soldier*>& enemySoldiers) {
@@ -196,10 +271,12 @@ void Soldier::findNearestEnemy(vector<Soldier*>& enemySoldiers) {
 		if (soldier->isDead()) {
 			continue;
 		}
-		double d = this->distance(soldier->getCol(), soldier->getRow());
-		if (d < distanceToEnemy) {
-			this->currentEnemy = soldier;
-			distanceToEnemy = d;
+		if (!soldier->isInsideTunnel()) {
+			double d = this->distance(soldier->getCol(), soldier->getRow());
+			if (d < distanceToEnemy) {
+				this->currentEnemy = soldier;
+				distanceToEnemy = d;
+			}
 		}
 	}
 }
@@ -211,30 +288,33 @@ void Soldier::lookForEnemy(vector<Soldier*>& enemySoldiers) {
 	// Look for enemy:
 	this->findNearestEnemy(enemySoldiers);
 	// If enemy is found, move towards it or shoot it:
-	if (currentEnemy != nullptr) {
-		int numEnemiesInMyRoom = 
-			this->maze->getAmountOfColorInRoom(this->col, this->row, this->enemyColor);
-		if (numEnemiesInMyRoom > 0) {
-			int numFriendsInMyRoom = 
-				this->maze->getAmountOfColorInRoom(this->col, this->row, this->myColor);
-			if (numEnemiesInMyRoom > numFriendsInMyRoom) {
-				this->currentEnemy = nullptr;
-				return;
-			}
-			// Choose randomly between fire and throw grenade: 
-			if (rand() % 3 == 0) {
-				this->initGrenadeToss(this->currentEnemy->getCol(), this->currentEnemy->getRow());
-			} else {
-				this->initFire(this->currentEnemy->getCol(), this->currentEnemy->getRow());
-			}
-		}
-		else { // Find path to the enemy:
-			this->maze->runAStar(this->getCol(), this->getRow(),
-				this->currentEnemy->getCol(), this->currentEnemy->getRow(),
-				this->myColor, this->enemyColor);
-			stack<Node*> path = this->maze->getPath();
-			swap(this->currentPath, path);
-		}
+	if (currentEnemy == nullptr) { // Enemy is not found -> return!
+		return;
+	}
+	// If reached here -> there's a current enemy
+	int numEnemiesInMyRoom =
+		this->maze->getAmountOfColorInRoom(this->col, this->row, this->enemyColor);
+	if (numEnemiesInMyRoom == 0) { // No enemies in my room -> search for path to enemy
+		this->maze->runAStar(this->getCol(), this->getRow(),
+			this->currentEnemy->getCol(), this->currentEnemy->getRow(),
+			this->myColor, this->enemyColor);
+		stack<Node*> path = this->maze->getPath();
+		swap(this->currentPath, path);
+		return;
+	}
+	// If reached here, there is an enemy in my room -> fight or escape:
+	int numFriendsInMyRoom =
+		this->maze->getAmountOfColorInRoom(this->col, this->row, this->myColor);
+	if (numEnemiesInMyRoom >= numFriendsInMyRoom) { // then go hide!
+		this->currentEnemy = nullptr; // reset current enemy
+		this->currentHideout = nullptr; // reset current hideout 
+		return;
+	}
+	// Choose randomly between fire and throw grenade: 
+	if (rand() % 3 == 0 && this->grenade == nullptr) {
+		this->initGrenadeToss(this->currentEnemy->getCol(), this->currentEnemy->getRow());
+	} else {
+		this->initFire(this->currentEnemy->getCol(), this->currentEnemy->getRow());
 	}
 }
 
@@ -243,8 +323,7 @@ bool Soldier::moveTowardsEnemy(vector<Kit*>& kits) {
 	if (this->maze->getAmountOfColorInRoom(this->col, this->row, this->enemyColor) > 0) {
 		stack<Node*> path;
 		swap(this->currentPath, path);
-	}
-	if (this->moveAndCollect(kits)) {
+	} else if (this->moveAndCollect(kits)) {
 		return true;
 	}
 	this->currentEnemy = nullptr;
@@ -260,9 +339,11 @@ bool Soldier::isInsideTunnel() {
 void Soldier::shoot() {
 	if (this->bullet && this->bullet->Move(this->maze)) { // Enemy is hit
 		this->currentEnemy->setHp((int)(-this->bullet->getDamage()));
+		this->bullet = nullptr;
 	}
 	if (!(this->bullet && this->bullet->IsMoving())) { // Bullet reached EOL
 		this->currentEnemy = nullptr;
+		this->bullet = nullptr;
 	}
 }
 
@@ -276,25 +357,30 @@ void Soldier::initFire(int destCol, int destRow) {
 /* Grenade Functions: */
 
 void Soldier::initGrenadeToss(int destCol, int destRow) {
-	this->grenade = new Grenade(this->col, this->row, destCol, destRow, this->enemyColor, this->myColor);
+	this->grenade = new Grenade(this->col, this->row, destCol, destRow, 
+		this->enemyColor, this->myColor);
 	this->setAngle(this->grenade->getAngle());
-	this->grenade->fly(true);
-	this->setGrenades(-1);
+	this->setGrenadeAmount(-1);
 }
 
 void Soldier::throwGrenade(vector<Soldier*>& enemySoldiers) {
 	if (this->grenade) { // Then grenade exists!
-		if (this->grenade->go(this->maze)) { // then grenade stopped moving and exploding
-			this->currentEnemy = nullptr;
-		} else if (!this->grenade->isMoving() && !this->grenade->exploded()) {
-			// Check for hits if the grenade is not moving but indeed exploding:
-			for (auto bullet : this->grenade->getBullets()) {
-				if (bullet->didHit()) {
-					for (auto soldier : enemySoldiers) {
-						int* bulletCell = bullet->coor2cell(bullet->GetX(), bullet->GetY());
-						if (soldier->getCol() == bulletCell[0] && soldier->getRow() == bulletCell[1]) {
-							soldier->setHp(-bullet->getDamage());
-							bullet->Fire(false);
+		this->grenade->go(this->maze); // grenade is on the go
+		if (!this->grenade->isMoving()) {
+			if (this->grenade->exploded()) {
+				this->grenade = nullptr;
+			} else {
+				// Then now grenade stopped moving and is exploding
+				// Check for hits if the grenade is not moving but indeed exploding:
+				for (auto bullet : this->grenade->getBullets()) {
+					if (bullet->didHit()) {
+						for (auto soldier : enemySoldiers) {
+							int* bulletCell = bullet->coor2cell(bullet->GetX(), bullet->GetY());
+							if (soldier->getCol() == bulletCell[0] &&
+								soldier->getRow() == bulletCell[1]) {
+								soldier->setHp(-bullet->getDamage());
+								bullet->Fire(false);
+							}
 						}
 					}
 				}
@@ -313,7 +399,6 @@ bool Soldier::move(int col, int row) {
 	}
 	this->setAngle(col, row);
 	this->bullet = nullptr;
-	this->grenade = nullptr;
 	this->maze->set(this->getCol(), this->getRow(), SPACE);
 	this->col = col;
 	this->row = row;
@@ -361,7 +446,8 @@ void Soldier::drawMe() {
 	double drawColor[3] = { 0 };
 	if (this->myColor == TEAM_RED) {
 		drawColor[0] = 1;
-	} else if (this->myColor == TEAM_BLUE) {
+	}
+	else if (this->myColor == TEAM_BLUE) {
 		drawColor[2] = 1;
 	}
 	// Rifle:
@@ -370,20 +456,26 @@ void Soldier::drawMe() {
 	drawRectangle(drawColor, x, y, size, size, NULL, NULL, NULL);
 	// Inner body:
 	drawRectangle(new double[] {0, 0, 0}, x, y, size / 2, size / 2, x, y, this->angle);
-	// Draw the bullet or the grenade (if exists):
-	if (bullet) {
+	// Draw the dagger or the bullet or the grenade (if exists):
+	if (this->isStabbing) {
+		drawTriangle(new double[] {0, 0, 0}, x + size, y,
+			size * 2, size / 2, x, y, this->angle);
+	}
+	this->isStabbing = false;
+	if (this->bullet) {
 		this->bullet->DrawMe();
 	} else if (bullet && (!bullet->IsMoving())) {
 		this->bullet = nullptr;
-	} else if (grenade) {
+	}
+	if (this->grenade) {
 		this->grenade->DrawMe();
-	} else if (grenade && (!grenade->exploded())) {
+	} else if (grenade && grenade->exploded()) {
 		this->grenade = nullptr;
 	}
 }
 
 double Soldier::distance(int col, int row) {
-	return sqrt(pow((this->col - col), 2) + pow((this->row - row), 2));
+	return sqrt(pow(this->col - col, 2) + pow(this->row - row, 2));
 }
 
 double* Soldier::cell2coor(int col, int row) {
@@ -426,17 +518,17 @@ void Soldier::setAmmo(int delta) {
 	}
 }
 
-int Soldier::getGrenades() {
-	return this->grenades;
+int Soldier::getGrenadeAmount() {
+	return this->grenadeAmount;
 }
 
-void Soldier::setGrenades(int delta) {
-	this->grenades += delta;
-	if (this->grenades < 0) {
-		this->grenades = 0;
+void Soldier::setGrenadeAmount(int delta) {
+	this->grenadeAmount += delta;
+	if (this->grenadeAmount < 0) {
+		this->grenadeAmount = 0;
 	}
-	if (this->grenades > MAX_GRENADES) {
-		this->grenades = MAX_GRENADES;
+	if (this->grenadeAmount > MAX_GRENADES) {
+		this->grenadeAmount = MAX_GRENADES;
 	}
 }
 

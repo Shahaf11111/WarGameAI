@@ -114,13 +114,15 @@ void Maze::initSecurityMap() {
 	cout << "Security map have been created!" << endl;
 }
 
-int* Maze::getSafeCellWith(int color) {
+int* Maze::getSafeCellWith(int colToExclude, int rowToExclude, int color) {
 	int max = 0;
 	int* safeCell = nullptr;
 	for (int i = 0; i < NUM_ROOMS; i++) {
-		int count = this->rooms[i].getAmountOf(this->maze, color);
-		if (max < count) {
-			safeCell = this->rooms[i].getSafeCell();
+		if (!this->rooms[i].contains(colToExclude, rowToExclude)) {
+			int count = this->rooms[i].getAmountOf(this->maze, colToExclude, rowToExclude, color);
+			if (max < count) {
+				safeCell = this->rooms[i].getSafeCell();
+			}
 		}
 	}
 	return safeCell;
@@ -188,7 +190,8 @@ void Maze::DrawMe()
 }
 
 bool Maze::isInsideTunnel(int col, int row) {
-	for (int i = -1; i <= 1; i++) {
+	// Check nearest cells:
+	for (int i = -1; i <= 1; i++) { 
 		for (int j = -1; j <= 1; j++) {
 			int aCol = min(max(0, col + i), MSZ - 1);
 			int aRow = min(max(0, row + i), MSZ - 1);
@@ -219,10 +222,11 @@ stack<Node*> Maze::getPath() {
 int Maze::getAmountOfColorInRoom(int col, int row, int color) {
 	// Receives cell to find out if there's a room that contains this cell.
 	// If so, counts (and returns) the amount of 'color' cells in that room.
+	// Exclude 'col' and 'row' from the count!
 	for (int i = 0; i < NUM_ROOMS; i++) {
 		Room room = this->rooms[i];
-		if (room.isInside(col, row)) {
-			return room.getAmountOf(this->maze, color);
+		if (room.contains(col, row)) {
+			return room.getAmountOf(this->maze, col, row, color);
 		}
 	}
 	return 0;

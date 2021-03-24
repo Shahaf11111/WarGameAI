@@ -64,8 +64,8 @@ bool Bullet::Move(Maze* maze) {
 	if (myCellColor == WALL) {
 		Fire(false);
 	} else { // moving on
-		x += SPEED * dirx;
-		y += SPEED * diry;
+		this->x += SPEED * dirx;
+		this->y += SPEED * diry;
 	}
 	return false;
 }

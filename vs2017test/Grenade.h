@@ -33,10 +33,9 @@ private:
 
 public:
 	Grenade(int startCol, int startRow, int targetCol, int targetRow, int targetColor, int friendlyColor);
-	bool go(Maze* maze);
-	void fly(bool f) { this->isFlying = f; }
+	void go(Maze* maze);
 	bool isMoving() { return this->isFlying; }
-	bool move(Maze* maze);
+	void move(Maze* maze);
 	void Explode();
 	bool exploded() { return isExploded; }
 	void Exploding(Maze* maze);

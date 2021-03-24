@@ -3,8 +3,8 @@
 
 const long REFRESH_RATE_MILLISECOND = 100;
 
-const int WIDTH = 800;
-const int HEIGHT = 800;
+const int WIDTH = 600;
+const int HEIGHT = 600;
 
 const int MSZ = 120;
 const int SPACE = 0;
@@ -21,10 +21,11 @@ const int MAX_OBSTACLES_IN_ROOM = 10;
 const int NUM_SOLDIERS = 10;
 
 const double BULLET_DAMAGE = 0.4;
+const double STAB_DAMAGE = 10;
 
 const int MAX_TURNS_TO_HIDE = 12;
-const int DISTANCE_TO_SEARCH_ENEMY = int(1.4 * sqrt(MSZ)); // It is approximately all the maze!
-const int DISTANCE_TO_SEARCH_KIT = int( 1.4 * sqrt(MSZ)); // It is approximately all the maze!
+const int DISTANCE_TO_SEARCH_ENEMY = int(1.4 * MSZ); // It is approximately all the maze!
+const int DISTANCE_TO_SEARCH_KIT = int(1.4 * MSZ); // It is approximately all the maze!
 
 const int MAX_GRENADES = 5;
 const int GRENADE_KIT_AMOUNT = NUM_ROOMS * 2;

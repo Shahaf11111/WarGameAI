@@ -15,36 +15,31 @@ Grenade::Grenade(int startCol, int startRow,
 	this->cy = endCoor[1];
 	this->targetColor = targetColor;
 	this->friendlyColor = friendlyColor;
+	this->isFlying = true;
+	this->isExploded = false;
 	this->angle = (int)(atan2(diry, dirx) * 180 / 3.14);
 	this->drawAngle = 0;
 }
 
-bool Grenade::go(Maze* maze) {
-	// Return true if grenade finished moving and exploding
-	if (this->isMoving()) {
+void Grenade::go(Maze* maze) {
+	if (this->isFlying) {
 		this->move(maze);
-		return false;
-	}
-	if (!this->isExploded) {
+	} else if (!this->isExploded) {
 		this->Exploding(maze);
-		return this->isExploded;
 	}
-	return true;
 }
 
-bool Grenade::move(Maze* maze) {
+void Grenade::move(Maze* maze) {
 	// return true if need to explode. otherwise return false
 	int* cell = this->coor2cell(this->x, this->y);
 	int myCellColor = maze->get(cell[0], cell[1]);
 	if (myCellColor != SPACE && myCellColor != this->friendlyColor) {
-		this->fly(false);
 		this->Explode();
-		return true;
-	} else { // moving on
+	} else {
+		// Grenade is moving:
 		x += SPEED * dirx;
 		y += SPEED * diry;
 	}
-	return false;
 }
 
 void Grenade::Explode() {
@@ -56,8 +51,7 @@ void Grenade::Explode() {
 			cos(alpha), sin(alpha), this->targetColor));
 		this->bullets.at(i)->Fire(true);
 	}
-	this->isExploded = false;
-
+	this->isFlying = false;
 }
 
 void Grenade::Exploding(Maze* maze) {
