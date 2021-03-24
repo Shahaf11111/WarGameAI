@@ -16,21 +16,26 @@ private:
 
 public:
 	Room();
-	void DrawMe();
-	void SetWidth(int w) { width = w; };
-	void SetHeigth(int h) { height = h; };
-	void SetCenterX(int x) { centerX = x; };
-	void SetCenterY(int y) { centerY = y; };
-	void FillMaze(int maze[MSZ][MSZ]);
+	void drawMe();
+	void fillMaze(int maze[MSZ][MSZ]);
+	
+	// Security map handlers and room utilities:
 	void initSafeCells(int securityMap[MSZ][MSZ]);
 	int* getSafeCell();
 	int getAmountOf(int maze[MSZ][MSZ], int colToExclude, int rowToExclude, int color);
-	bool IsOverlap(int w, int h, int row, int col);
+	bool isOverlapping(int w, int h, int row, int col);
 	bool contains(int col, int row);
-	int GetCenterRow() { return centerY; };
-	int GetCenterCol() { return centerX; };
+	
+	
+	//Getters & Setters:
+	int getCenterX() { return centerY; };
+	int getCenterY() { return centerX; };
 	int getHeight();
 	int getWidth();
+	void setWidth(int w) { width = w; };
+	void setHeight(int h) { height = h; };
+	void setCenterX(int x) { centerX = x; };
+	void setCenterY(int y) { centerY = y; };
 	int* getLeftBottomCorner() { return this->leftBottomCorner; };
 	int* getRightUpperCorner() { return this->rightUpperCorner; };
 

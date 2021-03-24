@@ -48,7 +48,7 @@ void AStar::checkNeighbor(Node* pcurrent, int row, int col, int trow, int tcol,
 	vector <Node>::iterator blackIterator;
 	// the cost of motion to the new Node depends on its color:
 	double cost = this->getCellCost(maze[row][col], friendColor, enemyColor);
-	Node* neighbor = new Node(row, col, trow, tcol, pcurrent->GetG() + cost, pcurrent);
+	Node* neighbor = new Node(row, col, trow, tcol, pcurrent->getG() + cost, pcurrent);
 	// now add it to pq if 
 	// 1. it is white
 	// 2. it is gray but it improves f of this Node 
@@ -57,8 +57,8 @@ void AStar::checkNeighbor(Node* pcurrent, int row, int col, int trow, int tcol,
 	grayIterator = find(grays.begin(), grays.end(), *neighbor);
 	blackIterator = find(blacks.begin(), blacks.end(), *neighbor);
 	// it is white if it is not black and not grays and it is not target
-	if (grayIterator != grays.end()) { // && it_black == blacks.end()) // it is gray
-		if (neighbor->GetF() < (*grayIterator).GetF()) {
+	if (grayIterator != grays.end()) { // && blackIterator == blacks.end()) // it is gray
+		if (neighbor->getF() < (*grayIterator).getF()) {
 			updatePQ(pq, neighbor);
 			// update this neighbor in grays
 			grays.erase(grayIterator);
@@ -94,9 +94,9 @@ void AStar::findPath(int startCol, int startRow, int endCol, int endRow,
 	// Find path with AStar:
 	Node* result = this->run(startCol, startRow, endCol, endRow, friendColor, enemyColor, maze);
 	// Populate the 'path' attribute:
-	while (result != nullptr && fabs(result->GetG()) > 0.01) { // only at START the 'g' is 0
+	while (result != nullptr && fabs(result->getG()) > 0.01) { // only at START the 'g' is 0
 		this->path.push(result);
-		result = result->GetParent();
+		result = result->getParent();
 	}
 }
 
@@ -117,7 +117,7 @@ Node* AStar::run(int startCol, int startRow, int endCol, int endRow,
 		// remove the top Node from pq
 		current = new Node(priorityQueue.top());
 		// check that it is not a target. If it is target than we just stop A*
-		if (fabs(current->GetH()) < 0.01) { // this is target
+		if (fabs(current->getH()) < 0.01) { // this is target
 			return current;
 		}
 		priorityQueue.pop();

@@ -17,12 +17,12 @@ private:
 
 public:
 	Maze();
-	void InitMaze();
-	void InitRooms();
+	void initMaze();
+	void initRooms();
 	void runAStar(int c, int r, int tc, int tr, int friendColor, int enemyColor);
-	void DigTunnel(int index1, int index2);
-	void DigTunnels();
-	void DrawMe();
+	void digTunnel(int index1, int index2);
+	void digTunnels();
+	void drawMe();
 	bool isInsideTunnel(int col, int row);
 	bool isSafe(int col, int row);
 	void initSecurityMap();

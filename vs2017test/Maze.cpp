@@ -4,27 +4,18 @@
 using namespace std;
 
 Maze::Maze() {
-	this->InitMaze();
-	this->InitRooms();
-	this->DigTunnels();
+	this->initMaze();
+	this->initRooms();
+	this->digTunnels();
 	this->initSecurityMap();
 }
 
 // init the whole space with WALLS
-void Maze::InitMaze() {
-	// FOR TESTING
+void Maze::initMaze() {
 	int i, j, obstacleCounter = 0;
-
 	for (i = 0; i < MSZ; i++) {
 		for (j = 0; j < MSZ; j++) {
 			this->maze[i][j] = WALL;
-			//this->maze[i][j] = SPACE;
-			/*this->maze[i][j] = SPACE;
-			if (rand() % 50 == 0 &&
-				(obstacleCounter < 300)) {
-				maze[i][j] = OBSTACLE;
-				obstacleCounter++;
-			}*/
 		}
 	}
 	for (i = 0; i < MSZ; i++) {
@@ -41,7 +32,7 @@ void Maze::InitMaze() {
 	}
 }
 
-void Maze::InitRooms() {
+void Maze::initRooms() {
 	int i, j;
 	int w, h, row, col;
 	int min = 10;
@@ -56,15 +47,15 @@ void Maze::InitRooms() {
 			row = 2 + h / 2 + rand() % (MSZ - h - 4);
 			// check if the above definitions don't make a room to overlap with any other room
 			for (j = 0; j < i && !overlap; j++)
-				if (rooms[j].IsOverlap(w, h, row, col))
+				if (rooms[j].isOverlapping(w, h, row, col))
 					overlap = true;
 		} while (overlap);
 
-		rooms[i].SetWidth(w);
-		rooms[i].SetHeigth(h);
-		rooms[i].SetCenterX(col);
-		rooms[i].SetCenterY(row);
-		rooms[i].FillMaze(this->maze);
+		rooms[i].setWidth(w);
+		rooms[i].setHeight(h);
+		rooms[i].setCenterX(col);
+		rooms[i].setCenterY(row);
+		rooms[i].fillMaze(this->maze);
 	}
 	cout << "All rooms have been created!" << endl;
 }
@@ -74,27 +65,26 @@ void Maze::runAStar(int c, int r, int tc, int tr, int friendColor, int enemyColo
 }
 
 // run A* that finds the "best" path from rooms[index1] to rooms[index2]
-void Maze::DigTunnel(int index1, int index2) {
+void Maze::digTunnel(int index1, int index2) {
 	int r, c, tr, tc;
 	// create start Node
-	r = rooms[index1].GetCenterRow();
-	c = rooms[index1].GetCenterCol();
-	tr = rooms[index2].GetCenterRow();
-	tc = rooms[index2].GetCenterCol();
+	r = rooms[index1].getCenterX();
+	c = rooms[index1].getCenterY();
+	tr = rooms[index2].getCenterX();
+	tc = rooms[index2].getCenterY();
 	this->aStar.findPath(c, r, tc, tr, SPACE, SPACE, this->maze);
 	this->aStar.colorPath(this->maze, SPACE);
 }
 
-void Maze::DigTunnels() {
+void Maze::digTunnels() {
 	cout << "Initializing the tunnels..." << endl;
 	for (int i = 0; i < NUM_ROOMS; i++) {
 		for (int j = i + 1; j < NUM_ROOMS; j++) {
-			this->DigTunnel(i, j); // A*
+			this->digTunnel(i, j); // A*
 			//cout << "Tunnel from " << i << " to " << j << " is ready!\n";
 		}
 	}
 	cout << "All tunnels have been created!" << endl;
-
 }
 
 void Maze::initSecurityMap() {
@@ -134,8 +124,7 @@ void Maze::initSafeCells(int securityMap[MSZ][MSZ]) {
 	}
 }
 
-void Maze::DrawMe()
-{
+void Maze::drawMe() {
 	int i, j;
 	double sx, sy; // cell size
 	double x, y;
@@ -144,10 +133,8 @@ void Maze::DrawMe()
 	sy = 2.0 / MSZ;
 	int factor = MSZ * MSZ;
 	for (i = 0; i < MSZ; i++)
-		for (j = 0; j < MSZ; j++)
-		{
-			switch (this->maze[i][j])
-			{
+		for (j = 0; j < MSZ; j++) {
+			switch (this->maze[i][j]) {
 			case SPACE:
 				glColor3d(1, 1, 1);   // white
 				break;

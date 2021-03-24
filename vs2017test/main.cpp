@@ -70,7 +70,7 @@ void init() {
 
 void display() {
 	glClear(GL_COLOR_BUFFER_BIT); // clean frame buffer
-	maze->DrawMe();
+	maze->drawMe();
 	for (auto kit : allKits) {
 		kit->drawMe();
 	}

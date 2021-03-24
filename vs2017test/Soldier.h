@@ -13,7 +13,6 @@ using namespace std;
 class Soldier : public Node {
 
 private:
-	int index;
 	Maze* maze;
 	int col;
 	int row;

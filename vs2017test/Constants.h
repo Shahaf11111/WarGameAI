@@ -21,7 +21,7 @@ const int MAX_OBSTACLES_IN_ROOM = 10;
 const int NUM_SOLDIERS = 10;
 
 const double BULLET_DAMAGE = 0.4;
-const double STAB_DAMAGE = 10;
+const double STAB_DAMAGE = 5;
 
 const int MAX_TURNS_TO_HIDE = 12;
 const int DISTANCE_TO_SEARCH_ENEMY = int(1.4 * MSZ); // It is approximately all the maze!

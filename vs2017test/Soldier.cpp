@@ -1,18 +1,17 @@
 #include "Soldier.h"
 
+
 using namespace std;
-int thisisanindex = 0;
+
 Soldier::Soldier(Maze* maze, int col, int row, int myColor, int enemyColor) {
-	this->index = thisisanindex;
-	thisisanindex++;
 	this->maze = maze;
 	this->col = col;
 	this->row = row;
 	this->myColor = myColor;
 	this->enemyColor = enemyColor;
-	this->ammo = MAX_AMMO;// rand() % MAX_AMMO + 1;
-	this->grenadeAmount = MAX_GRENADES;// rand() % MAX_GRENADES + 1;
-	this->hp = MAX_HP;// rand() % MAX_HP + 1;
+	this->ammo = rand() % MAX_AMMO + 1;
+	this->grenadeAmount = rand() % MAX_GRENADES + 1;
+	this->hp = rand() % MAX_HP + 1;
 	this->numTurnsToHide = 0;
 	this->angle = rand() % 360;
 	this->bullet = nullptr;
@@ -167,9 +166,9 @@ void Soldier::findSafeHideout() {
 }
 
 void Soldier::escape(vector<Kit*>& kits) {
-	if (!this->moveAndCollect(kits)) {
+	if (!this->moveAndCollect(kits)) { // then moving failed -> cancel hideout
 		this->currentHideout = nullptr;
-	} else if (!this->isInsideTunnel()) {
+	} else if (!this->isInsideTunnel()) { // then soldier is inside room -> cancel hideout and path
 		this->currentHideout = nullptr;
 		stack<Node*> path;
 		swap(this->currentPath, path);
@@ -180,7 +179,7 @@ void Soldier::escape(vector<Kit*>& kits) {
 
 void Soldier::collectKit(Node* nextNode, vector<Kit*>& kits, int kitType) {
 	bool removeKit = false;
-	for (auto kit : kits) {
+	for (auto kit : kits) { // iterate kits and see if there's a kit that is met with soldier
 		if (kit->getCol() == nextNode->getCol() && kit->getRow() == nextNode->getRow()) {
 			if (kitType == HP_KIT) {
 				this->setHp(kit->getAmount());
@@ -198,8 +197,7 @@ void Soldier::collectKit(Node* nextNode, vector<Kit*>& kits, int kitType) {
 				break;
 			}
 		}
-	}
-	
+	}	
 }
 
 bool Soldier::refillKit(vector<Kit*>& kits, int kitType) {
@@ -216,6 +214,7 @@ bool Soldier::refillKit(vector<Kit*>& kits, int kitType) {
 			}
 		}
 	}
+	// Done searching for a kit -> current kit is set and needs a path to walk into:
 	if (currentKit != nullptr) {
 		if (this->currentPath.empty()) {
 			this->maze->runAStar(this->getCol(), this->getRow(),
@@ -246,6 +245,7 @@ bool Soldier::moveAndCollect(vector<Kit*>& kits) {
 }
 
 bool Soldier::isKitNeeded(vector<Kit*> kits) {
+	// Returns true if kit is reachable
 	double distanceToKit = DISTANCE_TO_SEARCH_KIT;
 	if (kits.size() == 0) {
 		this->currentKit = nullptr;
@@ -257,6 +257,7 @@ bool Soldier::isKitNeeded(vector<Kit*> kits) {
 /* Enemy Functions: */
 
 bool Soldier::needToFindNewEnemy() {
+	// Returns true if can fight an enemy
 	return this->ammo > 0 &&
 		this->grenadeAmount > 0 &&
 		(this->currentEnemy == nullptr ||
@@ -266,6 +267,7 @@ bool Soldier::needToFindNewEnemy() {
 }
 
 void Soldier::findNearestEnemy(vector<Soldier*>& enemySoldiers) {
+	// Iterates enemy soldiers to get closest enemy -> he will be set as currentEnemy!
 	double distanceToEnemy = DISTANCE_TO_SEARCH_ENEMY;
 	for (auto soldier : enemySoldiers) {
 		if (soldier->isDead()) {

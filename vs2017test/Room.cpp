@@ -10,7 +10,7 @@ Room::Room() {
 	centerY = 0;
 }
 
-void Room::DrawMe() {
+void Room::drawMe() {
 	glColor3d(1, 1, 1); // white
 	glBegin(GL_POLYGON);
 	glVertex2d(0.5, 0.2);
@@ -20,7 +20,7 @@ void Room::DrawMe() {
 	glEnd();
 }
 
-void Room::FillMaze(int maze[MSZ][MSZ]) {
+void Room::fillMaze(int maze[MSZ][MSZ]) {
 	int i, j;
 	int obstacleCounter = 0;
 	int maxObstacles = (height + width) / 2;
@@ -79,7 +79,7 @@ int Room::getAmountOf(int maze[MSZ][MSZ], int colToExclude, int rowToExclude, in
 	return counter;
 }
 
-bool Room::IsOverlap(int w, int h, int row, int col)
+bool Room::isOverlapping(int w, int h, int row, int col)
 {
 	int hdist, vdist; // horizontal and vertical distances between rooms centers
 

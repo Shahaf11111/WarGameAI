@@ -38,11 +38,11 @@ Node::Node(int r, int c, int tr, int tc, double g, Node* p)
 	col = c;
 	parent = p;
 	this->g = g; // input cost
-	h = Distance(r, c, tr, tc); // my cost
+	h = distance(r, c, tr, tc); // my cost
 	f = g + h; // my total cost
 }
 
-double Node::Distance(int r1, int c1, int r2, int c2) {
+double Node::distance(int r1, int c1, int r2, int c2) {
 	return sqrt(pow(r1 - r2, 2) + pow(c1 - c2, 2));
 }
 

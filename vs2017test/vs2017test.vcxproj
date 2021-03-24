@@ -140,7 +140,6 @@
     <ClInclude Include="Grenade.h" />
     <ClInclude Include="Kit.h" />
     <ClInclude Include="Kits.h" />
-    <ClInclude Include="main.h" />
     <ClInclude Include="Maze.h" />
     <ClInclude Include="Node.h" />
     <ClInclude Include="Room.h" />
