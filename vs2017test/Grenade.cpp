@@ -74,11 +74,11 @@ void Grenade::Exploding(Maze* maze) {
 
 void Grenade::DrawMe() {
 	if (this->isFlying) {
-		double size = 0.01;
-		glColor3d(0, 0, 0);
+		double size = 1.2 / MSZ;
+		glColor3d(0.5, 1.0, 0.5);
 		glPushMatrix();
 		glTranslated(this->x, this->y, 0.0);
-		glRotated(this->drawAngle++, 0.0, 0.0, 1.0);
+		glRotated(this->drawAngle, 0.0, 0.0, 1.0);
 		glTranslated(-this->x, -this->y, 0.0);
 		glBegin(GL_POLYGON);
 		glVertex2d(this->x, this->y + size);
@@ -87,6 +87,7 @@ void Grenade::DrawMe() {
 		glVertex2d(x - size, y);
 		glEnd();
 		glPopMatrix();
+		this->drawAngle += 10;
 		if (this->drawAngle >= 360) {
 			this->drawAngle = 0;
 		}

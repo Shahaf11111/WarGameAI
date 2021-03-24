@@ -42,8 +42,8 @@ void Bullet::DrawMe() {
 	if (!this->isMoving) {
 		return;
 	}
-	double size = 0.01;
-	glColor3d(0, 0, 0);
+	double size = 1.2 / MSZ;
+	glColor3d(0.0, 0.8, 0.4);
 	glBegin(GL_POLYGON);
 	glVertex2d(this->x, this->y + size);
 	glVertex2d(x + size, y);

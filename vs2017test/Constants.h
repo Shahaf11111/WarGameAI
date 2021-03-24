@@ -3,8 +3,8 @@
 
 const long REFRESH_RATE_MILLISECOND = 100;
 
-const int WIDTH = 600;
-const int HEIGHT = 600;
+const int WIDTH = 800;
+const int HEIGHT = 800;
 
 const int MSZ = 120;
 const int SPACE = 0;
